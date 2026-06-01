@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nadi OS — Daily Fire Texts</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0e0e0f;
+    --surface: #161618;
+    --card: #1c1c1f;
+    --border: #2a2a2f;
+    --gold: #c9a84c;
+    --gold-light: #e8c96a;
+    --gold-dim: rgba(201,168,76,0.12);
+    --text: #f0ece4;
+    --muted: #7a7870;
+    --accent: #4a8fa8;
+    --green: #4caf7d;
+  }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 28px 22px 64px;
+    max-width: 680px;
+    margin: 0 auto;
+  }
+  .os-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 30px; }
+  .os-badge {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 11px; letter-spacing: 3px;
+    color: var(--gold); background: var(--gold-dim);
+    border: 1px solid var(--gold); padding: 3px 10px; border-radius: 2px;
+  }
+  .os-title { font-family: 'Bebas Neue', sans-serif; font-size: 13px; letter-spacing: 2px; color: var(--muted); }
+  h1 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(40px, 9vw, 56px); letter-spacing: 3px; line-height: 1; color: var(--text); margin-bottom: 6px; }
+  h1 span { color: var(--gold); }
+  .subtitle { font-size: 13px; color: var(--muted); letter-spacing: 0.4px; margin-bottom: 30px; }
+
+  .filter-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .filter-btn {
+    font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500;
+    letter-spacing: 1px; text-transform: uppercase;
+    padding: 6px 14px; border-radius: 3px;
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--muted); cursor: pointer; transition: all 0.18s;
+  }
+  .filter-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .filter-btn.active { background: var(--gold-dim); border-color: var(--gold); color: var(--gold-light); }
+
+  .prompt-row { display: flex; gap: 10px; margin-bottom: 30px; }
+  .prompt-input {
+    flex: 1; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 4px; padding: 10px 14px;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text);
+    outline: none; transition: border-color 0.2s;
+  }
+  .prompt-input::placeholder { color: var(--muted); }
+  .prompt-input:focus { border-color: var(--gold); }
+  .gen-btn {
+    font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 2px;
+    padding: 10px 22px; background: var(--gold); color: #0e0e0f;
+    border: none; border-radius: 4px; cursor: pointer;
+    transition: background 0.2s, transform 0.1s; white-space: nowrap;
+  }
+  .gen-btn:hover { background: var(--gold-light); }
+  .gen-btn:active { transform: scale(0.97); }
+  .gen-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  .cards-grid { display: flex; flex-direction: column; gap: 14px; }
+  .msg-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 6px; padding: 20px 20px 16px;
+    animation: fadeUp 0.35s ease both;
+  }
+  .msg-card:nth-child(2) { animation-delay: 0.09s; }
+  .msg-card:nth-child(3) { animation-delay: 0.18s; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .card-tag {
+    font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 10px; display: flex; align-items: center; gap: 7px;
+  }
+  .card-tag::before { content: ''; display: inline-block; width: 18px; height: 1px; background: var(--gold); }
+  .card-body { font-size: 15px; font-weight: 400; line-height: 1.68; color: var(--text); margin-bottom: 16px; }
+  .card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .action-btn {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase;
+    padding: 5px 13px; border-radius: 3px; border: 1px solid var(--border);
+    background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s;
+  }
+  .action-btn.copy { border-color: var(--accent); color: var(--accent); }
+  .action-btn.copy:hover { background: rgba(74,143,168,0.1); }
+  .action-btn.copied { border-color: var(--green) !important; color: var(--green) !important; }
+  .action-btn.sms { border-color: var(--green); color: var(--green); }
+  .action-btn.sms:hover { background: rgba(76,175,125,0.1); }
+
+  .skeleton-card { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 20px; animation: pulse 1.4s ease-in-out infinite; }
+  .skeleton-card + .skeleton-card { margin-top: 14px; }
+  @keyframes pulse { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+  .skel-line { height: 10px; background: var(--border); border-radius: 3px; margin-bottom: 9px; }
+  .skel-line.short { width: 30%; } .skel-line.full { width: 100%; } .skel-line.med { width: 72%; }
+
+  .empty { text-align: center; padding: 52px 0; color: var(--muted); }
+  .empty-icon { font-size: 38px; margin-bottom: 14px; }
+  .empty p { font-size: 14px; line-height: 1.65; }
+
+  .toast {
+    position: fixed; bottom: 22px; left: 50%;
+    transform: translateX(-50%) translateY(70px);
+    background: var(--green); color: #0e0e0f;
+    font-weight: 600; font-size: 13px;
+    padding: 10px 22px; border-radius: 4px;
+    transition: transform 0.3s ease; z-index: 999; white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="os-bar">
+  <span class="os-badge">NADI OS</span>
+  <span class="os-title">RELATIONSHIP STEWARDSHIP</span>
+</div>
+
+<h1>DAILY <span>FIRE</span><br>TEXTS</h1>
+<p class="subtitle">Send encouragement. Make deposits. Leave no one behind.</p>
+
+<div class="filter-row" id="filterRow">
+  <button class="filter-btn active" data-tone="general">General</button>
+  <button class="filter-btn" data-tone="faith">Faith-Based</button>
+  <button class="filter-btn" data-tone="grind">Grind Mode</button>
+  <button class="filter-btn" data-tone="hard season">Hard Season</button>
+  <button class="filter-btn" data-tone="brotherhood">Brotherhood</button>
+  <button class="filter-btn" data-tone="athlete">Athlete</button>
+</div>
+
+<div class="prompt-row">
+  <input class="prompt-input" id="contextInput" placeholder="Context (optional): 'job transition', 'big game today', 'rough week'…" />
+  <button class="gen-btn" id="genBtn" onclick="generateTexts()">Generate</button>
+</div>
+
+<div id="output"></div>
+<div class="toast" id="toast">Copied ✓</div>
+
+<script>
+  let activeTone = 'general';
+
+  document.getElementById('filterRow').addEventListener('click', e => {
+    const btn = e.target.closest('.filter-btn');
+    if (!btn) return;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeTone = btn.dataset.tone;
+  });
+
+  function showSkeleton() {
+    document.getElementById('output').innerHTML = [1,2,3].map(() => `
+      <div class="skeleton-card">
+        <div class="skel-line short"></div>
+        <div class="skel-line full"></div>
+        <div class="skel-line med"></div>
+        <div class="skel-line short" style="margin-top:12px;width:22%"></div>
+      </div>`).join('');
+  }
+
+  function showToast() {
+    const t = document.getElementById('toast');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  async function copyText(text, btn) {
+    try { await navigator.clipboard.writeText(text); } catch(e) {
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+    }
+    const orig = btn.innerHTML;
+    btn.innerHTML = '✓ Copied';
+    btn.classList.add('copied'); btn.classList.remove('copy');
+    showToast();
+    setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('copied'); btn.classList.add('copy'); }, 2200);
+  }
+
+  function openSMS(text) {
+    window.open('sms:?body=' + encodeURIComponent(text), '_blank');
+  }
+
+  function renderCards(messages) {
+    const labels = { general:'Encouragement', faith:'Faith', grind:'Grind Mode', 'hard season':'Hard Season', brotherhood:'Brotherhood', athlete:'Athlete Fire' };
+    document.getElementById('output').innerHTML = messages.map((msg, i) => `
+      <div class="msg-card">
+        <div class="card-tag">${labels[activeTone] || activeTone} · Option ${i+1}</div>
+        <div class="card-body">${msg}</div>
+        <div class="card-actions">
+          <button class="action-btn copy" onclick="copyText(${JSON.stringify(msg)}, this)">⎘ Copy</button>
+          <button class="action-btn sms" onclick="openSMS(${JSON.stringify(msg)})">✉ Open in Messages</button>
+        </div>
+      </div>`).join('');
+  }
+
+  async function generateTexts() {
+    const btn = document.getElementById('genBtn');
+    const context = document.getElementById('contextInput').value.trim();
+    btn.disabled = true; btn.textContent = 'Generating…';
+    showSkeleton();
+
+    const toneGuide = {
+      general: 'warm, genuine, human — something a real friend sends that feels personal, not a hallmark card',
+      faith: 'grounded in Christian faith — scripture-inspired, hope-filled, God-centered without being preachy',
+      grind: 'high-intensity and motivational — for someone in the arena who needs fire to keep going',
+      'hard season': 'compassionate and steady — for someone in difficulty, loss, or struggle. Acknowledge the hard, point toward the light',
+      brotherhood: 'man-to-man, direct, deeply affirming — the kind of message you send a brother you truly believe in',
+      athlete: 'sport-and-performance-focused — for a competitor about to compete or grinding through a tough training stretch'
+    };
+
+    const systemPrompt = `You are Nadi's encouragement engine inside Nadi OS — a faith-grounded life operating system built around presence, courage, and relational stewardship.
+
+Nadi sends genuine encouragement texts to friends daily as a ministry of presence. His identity pillars: Present. Courageous. Assertive. Grateful. Man of Service. His mantra: Lead honestly. Improve intentionally. End in peace.
+
+Generate exactly 3 short, ready-to-send text messages. Each should:
+- Sound like a real human wrote it — warm, direct, not AI-polished or corporate
+- Be 1 to 4 sentences max. Short enough to actually text.
+- Carry real weight without being over the top or performative
+- Be distinct from each other — different angles, different emotional registers
+- NOT start with "Hey" every time. Vary the opening. Some can start mid-thought.
+
+Tone for this batch: ${toneGuide[activeTone] || 'warm and genuine'}
+${context ? `Context/occasion the sender wants to honor: ${context}` : ''}
+
+Return ONLY a valid JSON array of exactly 3 strings. No preamble, no labels, no markdown. Example:
+["First text here.","Second text here.","Third text here."]`;
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system: systemPrompt,
+          messages: [{ role: 'user', content: 'Generate 3 encouragement texts now.' }]
+        })
+      });
+      const data = await res.json();
+      const raw = (data.content?.find(b => b.type === 'text')?.text || '[]').replace(/```json|```/g,'').trim();
+      const messages = JSON.parse(raw);
+      if (!Array.isArray(messages) || messages.length === 0) throw new Error('bad parse');
+      renderCards(messages);
+    } catch(err) {
+      document.getElementById('output').innerHTML = `
+        <div class="empty">
+          <div class="empty-icon">⚡</div>
+          <p>Couldn't generate texts right now.<br>Check your connection and try again.</p>
+        </div>`;
+    }
+    btn.disabled = false; btn.textContent = 'Generate';
+  }
+
+  generateTexts();
+</script>
+</body>
+</html>
